@@ -1,0 +1,1 @@
+[o, h, l, c] = request.security(syminfo.tickerid, "D", [open, high, low, close])
