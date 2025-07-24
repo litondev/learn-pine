@@ -1,0 +1,4 @@
+float o = request.security(syminfo.tickerid, "D", open)
+float h = request.security(syminfo.tickerid, "D", high)
+float l = request.security(syminfo.tickerid, "D", low)
+float c = request.security(syminfo.tickerid, "D", close)
