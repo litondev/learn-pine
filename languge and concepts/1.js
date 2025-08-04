@@ -1,9 +1,0 @@
-//@version=6
-indicator("My Script", overlay = true)
-src = close
-a = ta.sma(src, 5)
-b = ta.sma(src, 50)
-c = ta.cross(a, b)
-plot(a, color = color.blue)
-plot(b, color = color.black)
-plotshape(c, color = color.red)
