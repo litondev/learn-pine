@@ -1,9 +1,5 @@
-// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)
-// https://creativecommons.org/licenses/by-nc-sa/4.0/
-// © LuxAlgo
-
 //@version=5
-indicator("Liquidity Swings [LuxAlgo]"
+indicator("Liquidity Swings"
   , overlay = true
   , max_lines_count = 500
   , max_labels_count = 500
