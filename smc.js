@@ -1,5 +1,8 @@
+// FROM LUXALGO
+
 //@version=5
 indicator('Smart Money Concepts', ' Smart Money Concepts', overlay = true, max_labels_count = 500, max_lines_count = 500, max_boxes_count = 500)
+
 //---------------------------------------------------------------------------------------------------------------------}
 //CONSTANTS & STRINGS & INPUTS
 //---------------------------------------------------------------------------------------------------------------------{

@@ -1,3 +1,5 @@
+// FROM LUXALGO
+
 //@version=5
 strategy("Trendline Breakout Strategy", overlay=true, margin_long=100, margin_short=100, default_qty_type=strategy.percent_of_equity, default_qty_value=10)
 
