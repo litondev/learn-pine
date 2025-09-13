@@ -1,6 +1,3 @@
-// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
-// © LuxAlgo
-
 //@version = 4
 study(title=" Support and Resistance Levels with Breaks",shorttitle = " Support and Resistance Levels with Breaks [LuxAlgo]", overlay = true ,  max_bars_back=1000)
 //

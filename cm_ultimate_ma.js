@@ -1,9 +1,3 @@
-//Created by user ChrisMoody 4-24-2014...Updated 7/28/2014 added Tilson T3
-//Modified on 5-5-14 for 4apprentice08 with Optional BarColor based on Price  Crossing MA #1, or #2
-//Modified on 7-25-2014 to Add in Tilson T3
-//Plots The Majority of Moving Averages
-//Defaults to Current Chart Time Frame --- But Can Be Changed to Higher Or Lower Time Frames
-//2nd MA Capability with Show Crosses Feature
 study(title="CM_Ultimate_MA_MTF_V2", shorttitle="CM_Ultimate_MA_MTF_V2", overlay=true)
 //inputs
 src = close

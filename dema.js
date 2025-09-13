@@ -1,35 +1,3 @@
-// TF 1D
-    // BTC
-    // ETH
-    // SOL 
-    // BONK 
-    // POPCAT
-    // NASDAQ
-    // S&P 
-// TF 4H
-    // BTC
-    // ETH
-    // SOL 
-    // BONK 
-    // POPCAT
-    // S&P 
-// TF 1H
-    // BTC
-    // SOL 
-    // POPCAT
-    // S&P 
-// TF 15M
-    // BTC
-    // ETH
-    // SOL 
-    // BONK
-    // S&P 
-// TF 5M
-    // BTC 
-    // ETH 
-    // SOL 
-    // S&P 
-
 //@version=5
 strategy("DEMA Long Only (20 / 50)", overlay=true,
      default_qty_type=strategy.cash,

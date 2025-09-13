@@ -1,28 +1,3 @@
-// TF 1D
-    // BTC
-    // ETH
-    // SOL 
-    // BONK 
-    // NASDAQ
-    // S&P 
-// TF 4H
-    // BTC
-    // ETH
-    // SOL 
-    // BONK 
-    // S&P 
-// TF 1H
-    // BTC
-    // ETH
-    // SOL 
-    // S&P 
-// TF 15M
-    // BTC 
-    // ETH 
-    // SOL 
-// TF 5M
-    // ETH
-    
 //@version=5
 strategy("MACD Long Only", overlay=true,
      default_qty_type=strategy.cash,

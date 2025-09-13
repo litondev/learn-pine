@@ -1,5 +1,3 @@
-// FROM LUXALGO
-
 //@version=5
 indicator("Liquidity Swings"
   , overlay = true

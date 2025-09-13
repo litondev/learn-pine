@@ -1,6 +1,3 @@
-//@version=4
-//author: @kivancozbilgic
-
 study(title="Turtle Trade Channels Indicator", shorttitle="TuTCI", overlay=true, resolution="")
 length = input(20,"Entry Length", minval=1)
 len2=input(10, "Exit Length", minval=1)

@@ -1,8 +1,3 @@
-//
-// @author LazyBear
-//
-// If you use this code in its original/modified form, do drop me a note. 
-//
 study(title="WaveTrend [LazyBear]", shorttitle="WT_LB")
 n1 = input(10, "Channel Length")
 n2 = input(21, "Average Length")
