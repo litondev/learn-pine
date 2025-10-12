@@ -1,0 +1,103 @@
+//@version=5
+strategy("Long Only Strategy", overlay=true,
+  initial_capital=1000, 
+  commission_type=strategy.commission.percent, commission_value=0.00,
+  process_orders_on_close = true, calc_on_every_tick = false)
+
+// ========== INPUT ==========
+demaFastLen = input.int(20, "DEMA Fast (Trend)")
+demaSlowLen = input.int(50, "DEMA Slow (Trend)")
+useSL       = input.bool(true, "Enable Stop Loss")
+riskPct     = input.float(5, "Risk Allocation (%)", minval=0.1)  
+leverage    = input.int(100, "Leverage (X)", minval=1)          
+slPctOfRisk = input.float(100, "Stop Loss (% dari Risk Allocation)", minval=0.1)
+
+// ========== STOCHASTIC RSI  ==========
+stochRSILen = input.int(14, "StochRSI Length")
+stochK      = input.int(3, "%K Smooth")
+stochD      = input.int(3, "%D Smooth")
+rsiSource = ta.rsi(close, stochRSILen)
+stochRSI  = ta.stoch(rsiSource, rsiSource, rsiSource, stochRSILen)
+k         = ta.sma(stochRSI, stochK)
+d         = ta.sma(k, stochD)
+stochRSI_up = ta.crossover(k, d)
+
+// ========== DEMA ==========
+ema_fast  = ta.ema(close, demaFastLen)
+ema_fast2 = ta.ema(ema_fast, demaFastLen)
+dema20    = 2 * ema_fast - ema_fast2
+
+ema_slow  = ta.ema(close, demaSlowLen)
+ema_slow2 = ta.ema(ema_slow, demaSlowLen)
+dema50    = 2 * ema_slow - ema_slow2
+
+// ========== INDICATORS & SIGNALS ==========
+// DEMA Cross
+bullCross   = ta.crossover(dema20, dema50)
+bearCross   = ta.crossunder(dema20, dema50)
+
+// StochRsiW 
+srcW = open
+lengthRSIW = input.int(14, "RSI Length")
+lengthStochW = input.int(14, "Stoch Length")
+smoothKW = input.int(3, "Smooth K")
+smoothDW = input.int(3, "Smooth D")
+
+rsiWeeklyW = request.security(syminfo.tickerid, "1W", ta.rsi(srcW, lengthRSIW))
+stochRSIW = request.security(syminfo.tickerid, "1W", ta.stoch(rsiWeeklyW, rsiWeeklyW, rsiWeeklyW, lengthStochW))
+kW = ta.sma(stochRSIW, smoothKW)
+dW = ta.sma(kW, smoothDW)
+k_prevW = request.security(syminfo.tickerid, "1W", ta.sma(ta.stoch(rsiWeeklyW, rsiWeeklyW, rsiWeeklyW, lengthStochW), smoothKW)[1])
+
+upwardW = kW > k_prevW
+above_signalW = kW > dW
+
+downwardW = kW < k_prevW
+below_signalW = kW < dW
+
+crossUpW   = ta.crossover(kW, dW)   
+crossDownW = ta.crossunder(kW, dW)  
+
+// === BATAS JUMLAH ENTRY ===
+varip tradeCount = 0       
+
+if crossUpW
+    tradeCount := 0
+
+// ========== TRADING HOUR WIB ==========
+tradeHour = hour(time, "Asia/Jakarta")
+canTrade  = (tradeHour >= 6 and tradeHour <= 23)
+
+// ========== ORDER SIZE (riskPct * leverage) ==========
+accountEquity = strategy.equity           
+// accountEquity = strategy.initial_capital
+riskCapital   = accountEquity * (riskPct / 100)
+positionValue = riskCapital * leverage
+qtyContracts  = positionValue / close
+
+// ========== EXECUTE TRADE ==========
+buyId = "BUY Entry"
+
+if (canTrade and tradeCount < 2 and stochRSI_up and k < 80 and close > dema50 and strategy.position_size == 0)
+    strategy.entry(buyId, strategy.long, qty=qtyContracts)
+
+    tradeCount += 1
+
+// ========== EXIT LOGIC ==========
+if (strategy.position_size > 0)
+    entryPrice = strategy.position_avg_price
+
+    if useSL 
+        lossAllowed = riskCapital * (slPctOfRisk / 100)
+        stopMove    = lossAllowed / qtyContracts
+        stopPrice   = entryPrice - stopMove
+        strategy.exit("Exit SL", from_entry=buyId, stop=stopPrice)
+
+    if crossDownW
+        strategy.close(buyId, comment="Exit by DEMA cross down")
+
+// ========== PLOT ==========
+plot(dema20, title="DEMA20", color=color.yellow, linewidth=3)
+plot(dema50, title="DEMA50", color=color.green, linewidth=3)
+
+// plotshape(series=bullCross, title="Sinyal Beli", location=location.belowbar, color=color.new(color.green, 0), style=shape.triangleup, text="BUY", size=size.small)
