@@ -1,0 +1,134 @@
+//@version=5
+strategy("Long And Short Strategy", 
+  overlay=true,
+  initial_capital=1000, 
+  commission_type=strategy.commission.percent, 
+  commission_value=0.00,
+  process_orders_on_close = true, 
+  calc_on_every_tick = false)
+
+// ========== INPUTS ==========
+demaFastLen = input.int(20, "DEMA Fast (Trend)")
+demaSlowLen = input.int(50, "DEMA Slow (Trend)")
+
+useSL       = input.bool(true, "Enable Stop Loss")
+riskPct     = input.float(2, "Risk Allocation (%)", minval=0.1)  
+leverage    = input.int(100, "Leverage (X)", minval=1)          
+slPctOfRisk = input.float(100, "Stop Loss (% dari Risk Allocation)", minval=0.1)
+
+// ========== MANUAL DEMA ==========
+ema_fast  = ta.ema(close, demaFastLen)
+ema_fast2 = ta.ema(ema_fast, demaFastLen)
+dema20    = 2 * ema_fast - ema_fast2
+
+ema_slow  = ta.ema(close, demaSlowLen)
+ema_slow2 = ta.ema(ema_slow, demaSlowLen)
+dema50    = 2 * ema_slow - ema_slow2
+
+// ========== REGIME =============
+varip is_bull = false
+varip is_bear = false
+
+tf4h = "240"
+
+ema_fast_4h  = request.security(syminfo.tickerid, tf4h, ta.ema(close, demaFastLen))
+ema_fast2_4h = request.security(syminfo.tickerid, tf4h, ta.ema(ema_fast_4h, demaFastLen))
+dema20_4h    = request.security(syminfo.tickerid, tf4h, 2 * ema_fast_4h - ema_fast2_4h)
+
+ema_slow_4h  = request.security(syminfo.tickerid, tf4h, ta.ema(close, demaSlowLen))
+ema_slow2_4h = request.security(syminfo.tickerid, tf4h, ta.ema(ema_slow_4h, demaSlowLen))
+dema50_4h    = request.security(syminfo.tickerid, tf4h, 2 * ema_slow_4h - ema_slow2_4h)
+
+aboveBull = dema20_4h > dema50_4h
+aboveBear = dema20_4h < dema50_4h
+
+if aboveBull 
+    is_bull := true
+    is_bear := false
+
+if aboveBear
+    is_bear := true
+    is_bull := false
+
+// ========== SIGNAL ==========
+bullCross = ta.crossover(dema20, dema50)
+bearCross = ta.crossunder(dema20, dema50)
+
+// ========== TRADING HOUR (WIB) ==========
+tradeHour = hour(time, "Asia/Jakarta")
+canTrade  = (tradeHour >= 6 and tradeHour <= 23)
+
+// ========== ORDER SIZE DENGAN COMPOUNDING ==========
+accountEquity = strategy.equity                     
+riskCapital   = accountEquity * (riskPct / 100)
+positionValue = riskCapital * leverage
+qtyContracts  = positionValue / close
+
+// ========== EXECUTE TRADES ==========
+buyId = "BUY Entry"
+sellId = "SELL Entry"
+// TIDAK ADA BATASAN TRADE PERHARI 
+
+if (canTrade and close > dema50 and is_bull and strategy.position_size == 0)
+    strategy.entry(buyId, strategy.long, qty=qtyContracts)
+
+if (canTrade and close < dema50 and is_bear and strategy.position_size == 0)
+    strategy.entry(sellId, strategy.short, qty=qtyContracts)
+
+// ========== EXIT LOGIC LONG ==========
+if (strategy.position_size > 0)
+    entryPrice = strategy.position_avg_price
+
+    if useSL
+        lossAllowed = riskCapital * (slPctOfRisk / 100)
+        stopMove    = lossAllowed / qtyContracts
+        stopPrice   = entryPrice - stopMove
+        strategy.exit("Exit SL Long", from_entry=buyId, stop=stopPrice)
+
+    if bearCross
+        strategy.close(buyId, comment="Exit by DEMA cross down")
+
+// ========== EXIT LOGIC SHORT ==========
+if (strategy.position_size < 0)
+    entryPrice = strategy.position_avg_price
+
+    if useSL
+        lossAllowed = riskCapital * (slPctOfRisk / 100)
+        stopMove    = lossAllowed / qtyContracts
+        stopPrice   = entryPrice + stopMove
+        strategy.exit("Exit SL Short", from_entry=sellId, stop=stopPrice)
+
+    if bullCross
+        strategy.close(sellId, comment="Exit by DEMA cross up")
+
+// ========== VISUAL ==========
+
+// === CROSS DI 4 JAM (BOOLEAN) ===
+// === DETEKSI CROSS DI TF 4 JAM ===
+bullCross4H = request.security(syminfo.tickerid, tf4h, ta.crossover(dema20_4h, dema50_4h))
+bearCross4H = request.security(syminfo.tickerid, tf4h, ta.crossunder(dema20_4h, dema50_4h))
+
+// === SIMPAN KAPAN CROSS 4H TERJADI ===
+var float lastCrossTime = na
+var bool isBull = false
+var bool isBear = false
+
+if bullCross4H
+    lastCrossTime := time
+    isBull := true
+    isBear := false
+
+if bearCross4H
+    lastCrossTime := time
+    isBull := false
+    isBear := true
+
+// === CEK APAKAH MASIH DALAM 2 HARI SETELAH CROSS ===
+twoDaysMs = 2 * 24 * 60 * 60 * 1000  
+stillWithin2Days = not na(lastCrossTime) and (time - lastCrossTime) <= twoDaysMs
+
+// === (Opsional) DEBUG / TAMPILAN ===
+bgcolor(stillWithin2Days and isBull ? color.new(color.green, 80) : stillWithin2Days and isBear ? color.new(color.red, 80) : na)
+
+plot(dema20, title="DEMA20", color=color.yellow, linewidth=3)
+plot(dema50, title="DEMA50", color=color.green, linewidth=3)
