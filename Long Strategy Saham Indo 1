@@ -11,7 +11,7 @@ demaSlowLen = input.int(50, "DEMA Slow (Trend)")
 useSL       = input.bool(true, "Enable Stop Loss")
 riskPct     = input.float(100, "Risk Allocation (%)", minval=0.1)  
 leverage    = input.int(1, "Leverage (X)", minval=1)          
-slPctOfRisk = input.float(10, "Stop Loss (% dari Risk Allocation)", minval=0.1)
+slPctOfRisk = input.float(15, "Stop Loss (% dari Risk Allocation)", minval=0.1)
 
 // ========== DEMA ==========
 ema_fast  = ta.ema(close, demaFastLen)
@@ -34,9 +34,17 @@ positionValue = riskCapital * leverage
 qtyContracts  = positionValue / close
 
 // ========== EXECUTE TRADE ==========
+varip isBull = true     
+
+if bullCross
+    isBull := true
+ 
+if bearCross
+    isBull := false
+
 buyId = "BUY Entry"
 
-if (bullCross and strategy.position_size == 0)
+if (isBull and close > dema50 and strategy.position_size == 0)
     strategy.entry(buyId, strategy.long, qty=qtyContracts)
 
 // ========== EXIT LOGIC ==========
@@ -50,7 +58,7 @@ if (strategy.position_size > 0)
         strategy.exit("Exit SL", from_entry=buyId, stop=stopPrice)
 
     if bearCross
-        strategy.close(buyId, comment="Exit by MACD weekly cross down")
+        strategy.close(buyId, comment="Exit by DEMA weekly cross down")
 
 // ========== PLOT ==========
 plot(dema20, title="DEMA20", color=color.yellow, linewidth=3)
