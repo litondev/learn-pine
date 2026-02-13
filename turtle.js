@@ -4,7 +4,6 @@ len2=input(10, "Exit Length", minval=1)
 showsignals = input(title="Show Entry/Exit Signals ?", type=input.bool, defval=true)
 highlighting = input(title="Highlighter On/Off ?", type=input.bool, defval=true)
 
-
 lower = lowest(length)
 upper = highest(length)
 u = plot(upper, "Upper", color=#0094FF)

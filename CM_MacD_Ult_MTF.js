@@ -29,7 +29,6 @@ histA_IsDown = outHist < outHist[1] and outHist > 0
 histB_IsDown = outHist < outHist[1] and outHist <= 0
 histB_IsUp = outHist > outHist[1] and outHist <= 0
 
-//MacD Color Definitions
 macd_IsAbove = outMacD >= outSignal
 macd_IsBelow = outMacD < outSignal
 
